@@ -1,2 +1,2 @@
 # istio-unittest-time-client
-Client for the Service
+Proxy for the Service
