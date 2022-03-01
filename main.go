@@ -29,7 +29,7 @@ type Result struct {
 func handler(w http.ResponseWriter, r *http.Request) {
 	// check for request Header and forward it
 	reqIdHeaderKey := http.CanonicalHeaderKey("x-request-id")
-	originalVal, ok := r.Header[reqIdHeaderKey]
+	originalVal, incomingOk := r.Header[reqIdHeaderKey]
 
 	serverUrl := os.Getenv("SERVERURL")
 
@@ -42,7 +42,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ok {
+	if incomingOk {
 		req.Header.Set(reqIdHeaderKey, originalVal[0])
 	}
 
@@ -71,17 +71,28 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check that the server returned the correct request id
-	returnVal, ok := resp.Header[reqIdHeaderKey]
+	returnVal, proxyOk := resp.Header[reqIdHeaderKey]
 
-	if ok {
+	if proxyOk {
 		w.Header().Add(reqIdHeaderKey, returnVal[0])
 	}
 
-	if returnVal[0] != originalVal[0] {
-		log.Fatal("Server returned different X-Request-Id then the request")
-		log.Fatal(err.Error())
-		http.Error(w, err.Error(), 500)
-		return
+	if incomingOk && proxyOk {
+		// both are set but are they the same?
+		if returnVal[0] != originalVal[0] {
+			log.Fatal("Server returned different X-Request-Id then the request")
+			log.Fatal(err.Error())
+			http.Error(w, err.Error(), 500)
+			return
+		}
+	} else if incomingOk {
+		if !proxyOk {
+			// if we have an incoming, but not a proxy, then we have a problem
+			log.Fatal("Server lost request id")
+			log.Fatal(err.Error())
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	}
 
 	str, _ := json.Marshal(res)
