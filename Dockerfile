@@ -21,7 +21,9 @@ WORKDIR /
 COPY --from=build /istio-unittest-time-client /istio-unittest-time-client
 
 EXPOSE 8081
+RUN apk update 
 
-USER nonroot:nonroot
+RUN addgroup -S nonroot && adduser -S nonroot -G nonroot 
+USER nonroot
 
 ENTRYPOINT ["/istio-unittest-time-client"]
