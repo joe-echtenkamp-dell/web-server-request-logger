@@ -15,15 +15,15 @@ RUN go build -o ./proxy.out
 ## Deploy
 ##
 FROM alpine
+RUN apk update 
 
 WORKDIR /
 
 COPY --from=build /app/proxy.out /proxy.out
 
 EXPOSE 8081
-RUN apk update 
 
-#RUN addgroup -S nonroot && adduser -S nonroot -G nonroot 
-#USER nonroot
+RUN addgroup -S nonroot && adduser -S nonroot -G nonroot 
+USER nonroot
 
 ENTRYPOINT ["/proxy.out"]
