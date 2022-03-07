@@ -16,7 +16,6 @@ RUN go build -o ./proxy.out
 ##
 FROM alpine
 RUN apk update 
-
 WORKDIR /
 
 COPY --from=build /app/proxy.out /proxy.out

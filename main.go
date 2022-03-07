@@ -27,6 +27,7 @@ type Result struct {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+    log.Print("proxy server received request")
 	// check for request Header and forward it
 	reqIdHeaderKey := http.CanonicalHeaderKey("x-request-id")
 	originalVal, incomingOk := r.Header[reqIdHeaderKey]
@@ -101,6 +102,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	log.SetOutput(os.Stdout)
+	log.Print("proxy container config")
+	log.Printf("SERVERURL: %s", os.Getenv("SERVERURL"))
+
 	http.HandleFunc("/", handler)
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }
