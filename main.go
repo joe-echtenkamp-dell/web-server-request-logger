@@ -27,7 +27,7 @@ type Result struct {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-    log.Print("proxy server received request")
+	log.Println("proxy server received request")
 	// check for request Header and forward it
 	reqIdHeaderKey := http.CanonicalHeaderKey("x-request-id")
 	originalVal, incomingOk := r.Header[reqIdHeaderKey]
@@ -37,8 +37,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// call the server
 	req, err := http.NewRequest("GET", serverUrl, nil)
 	if err != nil {
-		log.Print("Failed to create new request.")
-		log.Print(err.Error())
+		log.Println("Failed to create new request.")
+		log.Println(err.Error())
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -50,8 +50,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Print("Failed to make request")
-		log.Print(err.Error())
+		log.Println("Failed to make request")
+		log.Println(err.Error())
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -81,16 +81,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if incomingOk && proxyOk {
 		// both are set but are they the same?
 		if returnVal[0] != originalVal[0] {
-			log.Print("Server returned different X-Request-Id then the request")
-			log.Print(err.Error())
+			log.Println("Server returned different X-Request-Id then the request")
+			log.Println(err.Error())
 			http.Error(w, err.Error(), 500)
 			return
 		}
 	} else if incomingOk {
 		if !proxyOk {
 			// if we have an incoming, but not a proxy, then we have a problem
-			log.Print("Server lost request id")
-			log.Print(err.Error())
+			log.Println("Server lost request id")
+			log.Println(err.Error())
 			http.Error(w, err.Error(), 500)
 			return
 		}
@@ -101,8 +101,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	log.SetOutput(os.Stdout)
-	log.Print("proxy container config")
+	// log.SetOutput(os.Stdout)
+	log.Println("proxy container config")
 	log.Printf("SERVERURL: %s", os.Getenv("SERVERURL"))
 
 	http.HandleFunc("/", handler)
