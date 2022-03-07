@@ -106,5 +106,5 @@ func main() {
 	log.Printf("SERVERURL: %s", os.Getenv("SERVERURL"))
 
 	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(":8081", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
