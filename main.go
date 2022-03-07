@@ -36,8 +36,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// call the server
 	req, err := http.NewRequest("GET", serverUrl, nil)
 	if err != nil {
-		log.Fatal("Failed to create new request.")
-		log.Fatal(err.Error())
+		log.Print("Failed to create new request.")
+		log.Print(err.Error())
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -49,8 +49,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal("Failed to make request")
-		log.Fatal(err.Error())
+		log.Print("Failed to make request")
+		log.Print(err.Error())
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -80,16 +80,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if incomingOk && proxyOk {
 		// both are set but are they the same?
 		if returnVal[0] != originalVal[0] {
-			log.Fatal("Server returned different X-Request-Id then the request")
-			log.Fatal(err.Error())
+			log.Print("Server returned different X-Request-Id then the request")
+			log.Print(err.Error())
 			http.Error(w, err.Error(), 500)
 			return
 		}
 	} else if incomingOk {
 		if !proxyOk {
 			// if we have an incoming, but not a proxy, then we have a problem
-			log.Fatal("Server lost request id")
-			log.Fatal(err.Error())
+			log.Print("Server lost request id")
+			log.Print(err.Error())
 			http.Error(w, err.Error(), 500)
 			return
 		}
