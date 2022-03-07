@@ -96,10 +96,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	str, _ := json.Marshal(res)
-	fmt.Fprintf(w, string(str))
+	fmt.Fprint(w, string(str))
 }
 
 func main() {
+	log.SetOutput(os.Stdout)
 	http.HandleFunc("/", handler)
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }
