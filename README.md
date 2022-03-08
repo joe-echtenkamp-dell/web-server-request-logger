@@ -1,2 +1,2 @@
-# istio-unittest-time-client
+# istio-bestpractice-time-proxy
 Proxy for the Service
