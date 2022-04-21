@@ -1,8 +1,9 @@
 package main
 
+// modified from
+// https://github.com/jmalloc/echo-server
 import (
-	"encoding/json"
-	"fmt"
+	"bytes"
 	"log"
 	"net/http"
 	"os"
@@ -16,88 +17,40 @@ type ServerTime struct {
 	Offset  int
 }
 
-type Result struct {
-	ServerTime time.Time
-	ServerTZ   string
-
-	ClientTime time.Time
-	ClientTZ   string
-
-	Pass bool
-}
-
 func handler(w http.ResponseWriter, r *http.Request) {
 	log.Println("proxy server received request")
 	// check for request Header and forward it
 	reqIdHeaderKey := http.CanonicalHeaderKey("x-request-id")
 	originalVal, incomingOk := r.Header[reqIdHeaderKey]
-
-	serverUrl := os.Getenv("SERVERURL")
-
-	// call the server
-	req, err := http.NewRequest("GET", serverUrl, nil)
-	if err != nil {
-		log.Println("Failed to create new request.")
-		log.Println(err.Error())
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
 	if incomingOk {
-		req.Header.Set(reqIdHeaderKey, originalVal[0])
+		w.Header().Add(reqIdHeaderKey, originalVal[0])
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println("Failed to make request")
-		log.Println(err.Error())
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	defer resp.Body.Close()
+	defer r.Body.Close()
 
-	var serverresult ServerTime
-	json.NewDecoder(resp.Body).Decode(&serverresult)
+	log.Printf("--------  %s | %s %s\n", r.RemoteAddr, r.Method, r.URL)
 
-	dt := time.Now()
-	zone_name, _ := dt.Zone()
-
-	res := Result{
-		ServerTime: serverresult.Time,
-		ServerTZ:   serverresult.TZ,
-		ClientTime: dt,
-		ClientTZ:   zone_name,
-		Pass:       true,
+	log.Printf("Headers\n")
+	//Iterate over all header fields
+	for k, v := range r.Header {
+		log.Printf("%q : %q\n", k, v)
 	}
 
-	// check that the server returned the correct request id
-	returnVal, proxyOk := resp.Header[reqIdHeaderKey]
+	buf := &bytes.Buffer{}
+	buf.ReadFrom(r.Body) // nolint:errcheck
 
-	if proxyOk {
-		w.Header().Add(reqIdHeaderKey, returnVal[0])
+	if buf.Len() != 0 {
+		bodyStr := buf.String() // nolint:errcheck
+		log.Println(bodyStr)
 	}
 
-	if incomingOk && proxyOk {
-		// both are set but are they the same?
-		if returnVal[0] != originalVal[0] {
-			log.Println("Server returned different X-Request-Id then the request")
-			log.Println(err.Error())
-			http.Error(w, err.Error(), 500)
-			return
-		}
-	} else if incomingOk {
-		if !proxyOk {
-			// if we have an incoming, but not a proxy, then we have a problem
-			log.Println("Server lost request id")
-			log.Println(err.Error())
-			http.Error(w, err.Error(), 500)
-			return
-		}
-	}
+	// sendServerHostnameString := os.Getenv("SEND_SERVER_HOSTNAME")
+	// if v := r.Header.Get("X-Send-Server-Hostname"); v != "" {
+	// 	sendServerHostnameString = v
+	// }
 
-	str, _ := json.Marshal(res)
-	fmt.Fprint(w, string(str))
+	// Return a 200 Status code
+	return
 }
 
 func main() {

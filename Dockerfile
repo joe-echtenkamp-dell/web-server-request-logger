@@ -9,7 +9,7 @@ COPY go.sum ./
 RUN go mod download
 
 COPY *.go ./
-RUN go build -o ./proxy.out
+RUN go build -o ./server.out
 
 ##
 ## Deploy
@@ -18,11 +18,11 @@ FROM alpine
 RUN apk update 
 WORKDIR /
 
-COPY --from=build /app/proxy.out /proxy.out
+COPY --from=build /app/server.out /server.out
 
 EXPOSE 8081
 
 RUN addgroup -S nonroot && adduser -S nonroot -G nonroot 
 USER nonroot
 
-ENTRYPOINT ["/proxy.out"]
+ENTRYPOINT ["/server.out"]
